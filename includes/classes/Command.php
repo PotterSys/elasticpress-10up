@@ -667,6 +667,9 @@ class Command extends WP_CLI_Command {
 	 *
 	 * [--force]
 	 * : Stop any ongoing sync
+	 * 
+	 * [--resume]
+	 * : Resumes any sync process that have been interrupted
 	 *
 	 * [--per-page=<per_page_number>]
 	 * : Determine the amount of posts to be indexed per bulk index (or cycle)
@@ -727,6 +730,7 @@ class Command extends WP_CLI_Command {
 	public function sync( $args, $assoc_args ) {
 		$setup_option = \WP_CLI\Utils\get_flag_value( $assoc_args, 'setup', false );
 		$force_option = \WP_CLI\Utils\get_flag_value( $assoc_args, 'force', false );
+		$resume_option = \WP_CLI\Utils\get_flag_value( $assoc_args, 'resume', false );
 
 		if ( $setup_option ) {
 			$message = sprintf(
@@ -746,6 +750,27 @@ class Command extends WP_CLI_Command {
 		} else {
 			declare( ticks = 1 );
 			pcntl_signal( SIGINT, [ Utility::class, 'delete_transient_on_int' ] );
+		}
+
+		if( $resume_option ){
+			if( $force_option ){
+				WP_CLI::warning( esc_html__('Forcing a sync and resuming it are not compatible', 'elasticpress') );
+				WP_CLI::confirm( esc_html__( 'Are you really sure you want to stop any other ongoing sync?', 'elasticpress' ), $assoc_args );
+			} 
+			
+			$last_object_id = Utils\get_transient('ep_last_object_id_indexed');
+
+			if( $last_object_id ){
+				WP_CLI::line( wp_sprintf(
+					/* translators: Object ID of the latest element synced */
+					esc_html__( 'Continuing from object ID %d', 'elasticpress' ),
+					$last_object_id
+				) );
+
+				$assoc_args['upper-limit-object-id'] = intval( $last_object_id );
+			} else {
+				WP_CLI::line( esc_html__('No latest object ID available, continuing as usual', 'elasticpress') );
+			}
 		}
 
 		$this->maybe_change_host( $assoc_args );

@@ -724,6 +724,8 @@ class IndexHelper {
 
 		$this->index_meta['current_sync_item']['last_processed_object_id'] = end( $this->current_query['objects'] )->ID;
 
+		Utils\set_transient('ep_last_object_id_indexed', $this->index_meta['current_sync_item']['last_processed_object_id'], 2 * HOUR_IN_SECONDS );
+
 		$summary = sprintf(
 			/* translators: 1. Indexable type 2. Offset start, 3. Offset end, 4. Found items 5. Last object ID */
 			esc_html__( 'Processed %1$s %2$d - %3$d of %4$d. Last Object ID: %5$d', 'elasticpress' ),
