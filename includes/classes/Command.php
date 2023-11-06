@@ -719,6 +719,7 @@ class Command extends WP_CLI_Command {
 	 * [--yes]
 	 * : Skip confirmation needed by `--setup`
 	 *
+	 * @subcommand sync
 	 * @param array $args Positional CLI args.
 	 * @since 4.4.0
 	 * @param array $assoc_args Associative CLI args.
